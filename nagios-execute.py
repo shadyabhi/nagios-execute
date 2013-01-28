@@ -1,4 +1,4 @@
-#!/use/bin/python2
+#!/usr/bin/python2
 
 """
 Usage:
