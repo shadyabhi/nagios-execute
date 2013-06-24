@@ -49,8 +49,11 @@ def execute_on_host((hostname, command), username=config['username'], keyfile=co
                cmdOutput += stdout.next()
            except StopIteration:
                break
-
-    print("%s -> %s" % (hostname, cmdOutput[:-1]))
+    try:
+        ret_value = stdout.channel.recv_exit_status()
+    except:
+        ret_value = "unknown"
+    print("%s:[%s] \n%s\n" % (hostname, ret_value, cmdOutput[:-1]))
     ssh_client.close()
     return (hostname, cmdOutput)
 
