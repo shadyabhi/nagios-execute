@@ -123,8 +123,9 @@ if __name__ == "__main__":
         host_cmds_list.append((host, sys.argv[2]))
 
     pool = Pool(config['parallel_procs'])
+
     try:
-        pool.map(execute_on_host, host_cmds_list)
+        pool.map_async(execute_on_host, host_cmds_list).get(9999999)
     except paramiko.SSHException:
         pass
     pool.close()
