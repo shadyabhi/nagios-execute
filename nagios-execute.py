@@ -24,7 +24,7 @@ config['keyfile'] = getenv['HOME'] + "/.ssh/" + config['keyname']
 import paramiko
 import os
 import sys
-from multiprocessing import Pool
+from multiprocessing import Pool, Lock
 from config import config
 import signal
 
@@ -50,6 +50,7 @@ paramiko.util.log_to_file('ssh.log')
 
 def execute_on_host((hostname, command), username=config['username'], keyfile=config['keyfile']):
 
+    global lock
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
@@ -72,7 +73,9 @@ def execute_on_host((hostname, command), username=config['username'], keyfile=co
         ret_value = stdout.channel.recv_exit_status()
     except:
         ret_value = "unknown"
-    print("%s:[%s] \n%s\n" % (cyan(hostname), yellow(ret_value), white(cmdOutput[:-1])))
+    with lock:
+        print("%s:[%s] \n%s\n" % (cyan(hostname), yellow(ret_value), white(cmdOutput[:-1])))
+
     ssh_client.close()
     return (hostname, cmdOutput)
 
@@ -122,6 +125,8 @@ if __name__ == "__main__":
         #host_cmds_list.append((host, '/usr/bin/sudo /sbin/service puppet status'))
         host_cmds_list.append((host, sys.argv[2]))
 
+    global lock
+    lock = Lock()
     pool = Pool(config['parallel_procs'])
 
     try:
